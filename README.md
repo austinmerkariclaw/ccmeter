@@ -55,6 +55,22 @@ Exit codes: `0` ok, `1` over budget or no transcripts found, `2` bad usage.
 `--json` emits the full breakdown, which is the hook for a dashboard or a monthly
 report.
 
+### On a subscription? Find out what your plan actually returns
+
+Most Claude Code users are on Pro or Max, not API billing. `--plan` reframes the
+same numbers as return on subscription:
+
+```
+$ ccmeter --plan pro
+
+On a $20.00/mo plan, 30 days cost you $20.00
+and returned $920.38 of API-equivalent usage — 46.0x.
+```
+
+Takes `pro`, `max5`, `max20`, or a monthly dollar amount. Defaults to a 30-day
+window; override with `--days`. This is also the honest way to decide whether a
+plan upgrade pays for itself — compare the multiplier before and after.
+
 ### Use it as a spend gate
 
 `--budget` makes the tool usable unattended — fail the job when an agent run costs
