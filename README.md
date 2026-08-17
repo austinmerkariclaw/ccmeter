@@ -42,13 +42,28 @@ npx ccmeter
 ccmeter [options]
 
   --days N     only count activity from the last N days
+  --budget N   exit 1 if total cost exceeds N dollars (CI spend gate)
   --top N      rows per table (default 10)
   --root DIR   transcript directory (default ~/.claude/projects)
   --json       machine-readable output
 ```
 
-`--json` emits the full breakdown, which is the hook for a dashboard, a CI budget
-check, or a monthly report.
+Exit codes: `0` ok, `1` over budget or no transcripts found, `2` bad usage.
+
+`--json` emits the full breakdown, which is the hook for a dashboard or a monthly
+report.
+
+### Use it as a spend gate
+
+`--budget` makes the tool usable unattended — fail the job when an agent run costs
+more than you meant to spend:
+
+```bash
+ccmeter --days 1 --budget 25 || echo "agent spend exceeded today's budget"
+```
+
+The same check works in `--json` mode, which adds `budget` and `overBudget` fields
+and sets the exit code identically.
 
 ## Why not just count the lines?
 

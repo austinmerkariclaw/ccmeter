@@ -4,10 +4,11 @@
 const { analyze, defaultRoot } = require('../index.js');
 
 function parseArgs(argv) {
-  const opts = { top: 10, json: false, days: null, root: null };
+  const opts = { top: 10, json: false, days: null, root: null, budget: null };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--json') opts.json = true;
+    else if (a === '--budget') opts.budget = Number(argv[++i]);
     else if (a === '--days') opts.days = Number(argv[++i]);
     else if (a === '--top') opts.top = Number(argv[++i]);
     else if (a === '--root') opts.root = argv[++i];
@@ -25,10 +26,13 @@ const HELP = `ccmeter — what your Claude Code sessions actually cost
 Usage: ccmeter [options]
 
   --days N     only count activity from the last N days
+  --budget N   exit 1 if total cost exceeds N dollars (CI spend gate)
   --top N      rows per table (default 10)
   --root DIR   transcript directory (default ${defaultRoot()})
   --json       machine-readable output
   -h, --help   this message
+
+Exit codes: 0 ok, 1 over budget or no transcripts found, 2 bad usage.
 `;
 
 const usd = (n) => '$' + n.toFixed(2);
@@ -59,6 +63,13 @@ async function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (opts.help) return console.log(HELP);
 
+  for (const k of ['days', 'top', 'budget']) {
+    if (opts[k] !== null && !(opts[k] > 0)) {
+      console.error(`ccmeter: --${k} needs a positive number`);
+      process.exit(2);
+    }
+  }
+
   const since = opts.days ? new Date(Date.now() - opts.days * 864e5) : null;
   const r = await analyze({ root: opts.root, since });
 
@@ -67,9 +78,11 @@ async function main() {
     process.exit(1);
   }
 
+  const overBudget = opts.budget !== null && r.totals.cost > opts.budget;
+
   if (opts.json) {
     const obj = (m) => Object.fromEntries(m);
-    return console.log(
+    console.log(
       JSON.stringify(
         {
           root: r.root,
@@ -79,11 +92,14 @@ async function main() {
           byProject: obj(r.byProject),
           byDay: obj(r.byDay),
           unpriced: r.unpriced,
+          budget: opts.budget,
+          overBudget,
         },
         null,
         2
       )
     );
+    return process.exit(overBudget ? 1 : 0);
   }
 
   const t = r.totals;
@@ -112,6 +128,12 @@ async function main() {
 
   if (r.unpriced.length) {
     console.log(`\nNote: no pricing for ${r.unpriced.join(', ')} — excluded from cost.`);
+  }
+
+  if (opts.budget !== null) {
+    const verdict = overBudget ? 'OVER BUDGET' : 'within budget';
+    console.log(`\n${verdict}: ${usd(r.totals.cost)} of ${usd(opts.budget)}`);
+    if (overBudget) process.exit(1);
   }
 }
 
