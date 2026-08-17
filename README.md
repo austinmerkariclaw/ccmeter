@@ -83,6 +83,25 @@ ccmeter --days 1 --budget 25 || echo "agent spend exceeded today's budget"
 The same check works in `--json` mode, which adds `budget` and `overBudget` fields
 and sets the exit code identically.
 
+## Where did it actually go?
+
+Two questions nothing else answers, both from data already on your disk:
+
+```
+Subagents    $107.49 of $925.23 (12%) across 950 messages
+
+Tool           calls      cost
+------------------------------
+Bash             503   $126.91
+Edit             453    $92.02
+Write            121    $34.06
+```
+
+Tool figures are **attribution by invocation**: the cost of the turns a tool was
+called in, split across tools called in the same turn. The tool did not *cause*
+that cost — accumulated context did — but it shows which tools ride along with
+your expensive turns, which is what you need when trimming an agent loop.
+
 ## Why not just count the lines?
 
 Claude Code writes the same assistant message to the transcript many times as it

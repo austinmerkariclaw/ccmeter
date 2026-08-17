@@ -107,6 +107,8 @@ async function main() {
           byModel: obj(r.byModel),
           byProject: obj(r.byProject),
           byDay: obj(r.byDay),
+          byAgent: obj(r.byAgent),
+          byTool: obj(r.byTool),
           unpriced: r.unpriced,
           budget: opts.budget,
           overBudget,
@@ -139,9 +141,28 @@ async function main() {
     );
   }
 
+  if (r.byAgent.size > 1) {
+    const sub = r.byAgent.get('subagent');
+    console.log(
+      `Subagents    ${usd(sub.cost)} of ${usd(t.cost)} ` +
+        `(${((sub.cost / t.cost) * 100).toFixed(0)}%) across ${sub.messages} messages`
+    );
+  }
+
   table('Project', r.byProject, opts.top);
   table('Model', r.byModel, opts.top);
   table('Session', r.bySession, opts.top);
+
+  const tools = [...r.byTool.entries()].sort((a, b) => b[1].cost - a[1].cost).slice(0, opts.top);
+  if (tools.length) {
+    const w = Math.max(4, ...tools.map(([k]) => k.length));
+    console.log('\n' + 'Tool'.padEnd(w) + '     calls      cost');
+    console.log('-'.repeat(w + 20));
+    for (const [name, x] of tools) {
+      console.log(name.padEnd(w) + String(x.calls).padStart(10) + usd(x.cost).padStart(10));
+    }
+    console.log('(cost of the turns each tool was called in, split across co-called tools)');
+  }
 
   const days = [...r.byDay.entries()].sort((a, b) => a[0].localeCompare(b[0])).slice(-opts.top);
   if (days.length) {
