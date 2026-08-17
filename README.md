@@ -27,14 +27,16 @@ Documents-Astrea-Model                 $135.62   96.5K    164.0M  616.5K
 ## Install
 
 ```bash
-npm install -g ccmeter
+npm install -g github:austinmerkariclaw/ccmeter
 ```
 
 Or run it once without installing:
 
 ```bash
-npx ccmeter
+npx github:austinmerkariclaw/ccmeter
 ```
+
+Node 18+. No dependencies to download — the install is the source and nothing else.
 
 ## Usage
 
