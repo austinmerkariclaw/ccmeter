@@ -1,0 +1,11 @@
+{
+  "name": "ccmeter",
+  "version": "0.1.0",
+  "description": "Find out what your Claude Code sessions actually cost. Reads local transcripts, reports spend by project, model, session, and day. Zero dependencies, fully offline.",
+  "bin": { "ccmeter": "bin/cli.js" },
+  "main": "index.js",
+  "files": ["bin", "index.js", "pricing.json", "README.md"],
+  "keywords": ["claude", "claude-code", "anthropic", "llm", "tokens", "cost", "cli"],
+  "license": "MIT",
+  "engines": { "node": ">=18" }
+}
